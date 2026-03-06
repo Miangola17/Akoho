@@ -1,0 +1,107 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Gestion des Oeufs</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Nouveau pondement</button>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Filtre par lot -->
+  <div class="card filter-bar">
+    <label>Filtrer par lot :</label>
+    <select class="form-control" [(ngModel)]="filterLotId" (change)="onFilterChange()">
+      <option [value]="0">Tous les lots</option>
+      <option *ngFor="let l of lots()" [value]="l.id">{{ l.nom }}</option>
+    </select>
+  </div>
+
+  <!-- Formulaire -->
+  <div class="modal-overlay" *ngIf="showForm()">
+    <div class="modal">
+      <h2>{{ editingOeuf() ? 'Modifier' : 'Enregistrer un pondement' }}</h2>
+      <form (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Lot *</label>
+            <select [(ngModel)]="form.lot_id" name="lot_id" required class="form-control">
+              <option [value]="0">-- Choisir un lot --</option>
+              <option *ngFor="let l of lots()" [value]="l.id">{{ l.nom }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date de pondement *</label>
+            <input type="date" [(ngModel)]="form.date_pondement" name="date_pondement" required class="form-control" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre d'oeufs *</label>
+            <input type="number" [(ngModel)]="form.nombre_oeufs" name="nombre_oeufs" required min="0" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Oeufs morts / non viables</label>
+            <input type="number" [(ngModel)]="form.nombre_oeufs_morts" name="oeufs_morts" min="0" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Destination *</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" [(ngModel)]="form.type" name="type" value="vendre" />
+              Vendre les oeufs
+            </label>
+            <label class="radio-label">
+              <input type="radio" [(ngModel)]="form.type" name="type" value="incuber" />
+              Incuber (créer un nouveau lot)
+            </label>
+          </div>
+          <p class="hint" *ngIf="form.type === 'incuber'">
+            Un nouveau lot sera automatiquement créé avec {{ (form.nombre_oeufs || 0) - (form.nombre_oeufs_morts || 0) }} akoho.
+          </p>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" *ngIf="!loading(); else loadingTpl">
+    <table class="table" *ngIf="oeufs().length > 0; else emptyTpl">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Lot</th>
+          <th>Nb oeufs</th>
+          <th>Nb morts</th>
+          <th>Bons</th>
+          <th>Destination</th>
+          <th>Revenu (Ar)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of oeufs()">
+          <td>{{ o.date_pondement | date:'dd/MM/yyyy' }}</td>
+          <td>{{ o.lot_nom }}</td>
+          <td>{{ o.nombre_oeufs }}</td>
+          <td class="text-danger">{{ o.nombre_oeufs_morts }}</td>
+          <td class="text-success">{{ o.nombre_oeufs_bons }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="o.type === 'vendre'">Vente</span>
+            <span class="badge badge-info" *ngIf="o.type === 'incuber'">Incubation</span>
+          </td>
+          <td>{{ o.type === 'vendre' ? (o.revenu_oeufs | number:'1.2-2') : '-' }}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" (click)="openEditForm(o)">Modifier</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(o.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyTpl><p class="empty-state">Aucun pondement enregistré.</p></ng-template>
+  </div>
+  <ng-template #loadingTpl><p class="loading">Chargement...</p></ng-template>
+</div>

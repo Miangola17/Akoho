@@ -1,0 +1,22 @@
+.page { padding: 1.5rem 2rem; max-width: 1300px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.page-header h1 { margin: 0; font-size: 1.6rem; color: #2c3e50; }
+.filter-section { padding: 1rem 1.5rem; }
+.filter-section h3 { margin-top: 0; }
+.filter-row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; }
+.filter-actions { display: flex; gap: .5rem; }
+
+.totaux-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.total-card { border-radius: 8px; padding: 1.2rem 1.5rem; color: white; }
+.total-card.green { background: #27ae60; }
+.total-card.red { background: #e74c3c; }
+.total-card.blue { background: #2980b9; }
+.total-label { font-size: .85rem; opacity: .85; }
+.total-value { font-size: 1.4rem; font-weight: 700; margin-top: .3rem; }
+
+.row-gain { background: #f0fff4; }
+.row-perte { background: #fff5f5; }
+.table-bilan th, .table-bilan td { font-size: .85rem; }
+.formules { padding: 1rem 1.5rem; background: #f8f9fa; }
+.formules h3 { margin-top: 0; }
+.formules ul { margin: 0; padding-left: 1.5rem; line-height: 1.9; }

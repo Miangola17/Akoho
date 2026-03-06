@@ -1,0 +1,96 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Lots</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Nouveau lot</button>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Formulaire -->
+  <div class="modal-overlay" *ngIf="showForm()">
+    <div class="modal">
+      <h2>{{ editingLot() ? 'Modifier le lot' : 'Nouveau lot' }}</h2>
+      <form (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom du lot *</label>
+            <input type="text" [(ngModel)]="form.nom" name="nom" required class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Race *</label>
+            <select [(ngModel)]="form.race_id" name="race_id" required class="form-control">
+              <option [value]="0">-- Choisir une race --</option>
+              <option *ngFor="let r of races()" [value]="r.id">{{ r.nom }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date de création *</label>
+            <input type="date" [(ngModel)]="form.date_creation" name="date_creation" required class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nombre initial d'akoho *</label>
+            <input type="number" [(ngModel)]="form.nombre_initial" name="nombre_initial" required min="1" class="form-control" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Prix d'achat unitaire (Ar) *</label>
+            <input type="number" [(ngModel)]="form.prix_achat_unitaire" name="prix_achat" required min="0" step="0.01" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nombre de morts</label>
+            <input type="number" [(ngModel)]="form.nombre_morts" name="nombre_morts" min="0" class="form-control" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="form.description" name="description" rows="2" class="form-control"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" *ngIf="!loading(); else loadingTpl">
+    <table class="table" *ngIf="lots().length > 0; else emptyTpl">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Race</th>
+          <th>Date création</th>
+          <th>Total</th>
+          <th>Vivants</th>
+          <th>Morts</th>
+          <th>Coût achat total (Ar)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of lots()">
+          <td><strong>{{ l.nom }}</strong></td>
+          <td><span class="badge">{{ l.race_nom }}</span></td>
+          <td>{{ l.date_creation | date:'dd/MM/yyyy' }}</td>
+          <td>{{ l.nombre_initial }}</td>
+          <td class="text-success">{{ l.nombre_vivants }}</td>
+          <td class="text-danger">{{ l.nombre_morts }}</td>
+          <td>{{ l.cout_achat_total | number:'1.2-2' }}</td>
+          <td>
+            <a [routerLink]="['/statistiques', l.id]" class="btn btn-sm btn-info">Stats</a>
+            <button class="btn btn-sm btn-secondary" (click)="openEditForm(l)">Modifier</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(l.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyTpl>
+      <p class="empty-state">Aucun lot enregistré.</p>
+    </ng-template>
+  </div>
+  <ng-template #loadingTpl><p class="loading">Chargement...</p></ng-template>
+</div>

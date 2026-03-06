@@ -1,0 +1,108 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Bilan financier</h1>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Filtres -->
+  <div class="card filter-section">
+    <h3>Filtres</h3>
+    <div class="filter-row">
+      <div class="form-group">
+        <label>Filtrer par date (jusqu'au)</label>
+        <input type="date" [(ngModel)]="dateFiltre" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Filtrer par lot</label>
+        <select [(ngModel)]="lotFiltre" class="form-control">
+          <option [value]="0">Tous les lots</option>
+          <option *ngFor="let l of lots()" [value]="l.id">{{ l.nom }}</option>
+        </select>
+      </div>
+      <div class="form-group filter-actions">
+        <button class="btn btn-primary" (click)="loadBilan()">Calculer</button>
+        <button class="btn btn-secondary" (click)="resetFilters()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Totaux globaux -->
+  <div class="totaux-grid" *ngIf="bilan() as b">
+    <div class="total-card green">
+      <div class="total-label">Bénéfice total</div>
+      <div class="total-value">{{ b.totaux.benefice_total | number:'1.2-2' }} Ar</div>
+    </div>
+    <div class="total-card red">
+      <div class="total-label">Perte totale</div>
+      <div class="total-value">{{ b.totaux.perte_totale | number:'1.2-2' }} Ar</div>
+    </div>
+    <div class="total-card" [class.green]="b.totaux.resultat_net_global >= 0" [class.red]="b.totaux.resultat_net_global < 0">
+      <div class="total-label">Résultat net global</div>
+      <div class="total-value">{{ b.totaux.resultat_net_global | number:'1.2-2' }} Ar</div>
+    </div>
+    <div class="total-card blue">
+      <div class="total-label">Période analysée</div>
+      <div class="total-value">{{ b.totaux.date_filtre }}</div>
+    </div>
+  </div>
+
+  <!-- Tableau par lot -->
+  <div class="card" *ngIf="bilan() as b">
+    <h3>Détail par lot</h3>
+    <div class="loading" *ngIf="loading()">Calcul en cours...</div>
+    <table class="table table-bilan" *ngIf="b.lots.length > 0; else emptyTpl">
+      <thead>
+        <tr>
+          <th>Lot</th>
+          <th>Race</th>
+          <th>Akoho (vivants/total)</th>
+          <th>Morts</th>
+          <th>Coût achat (Ar)</th>
+          <th>Coût nourrit. (Ar)</th>
+          <th>Coût TOTAL (Ar)</th>
+          <th>Revenu akoho (Ar)</th>
+          <th>Revenu oeufs (Ar)</th>
+          <th>Revenu TOTAL (Ar)</th>
+          <th>Résultat net (Ar)</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lot of b.lots" [class.row-gain]="lot.est_benefice" [class.row-perte]="!lot.est_benefice">
+          <td><strong>{{ lot.lot_nom }}</strong></td>
+          <td>{{ lot.race_nom }}</td>
+          <td>{{ lot.nombre_vivants }} / {{ lot.nombre_initial }}</td>
+          <td class="text-danger">{{ lot.nombre_morts }}</td>
+          <td>{{ lot.cout_achat_total | number:'1.2-2' }}</td>
+          <td>{{ lot.cout_nourriture_total | number:'1.2-2' }}</td>
+          <td><strong>{{ lot.cout_total | number:'1.2-2' }}</strong></td>
+          <td>{{ lot.revenu_vente_akoho | number:'1.2-2' }}</td>
+          <td>{{ lot.revenu_oeufs | number:'1.2-2' }}</td>
+          <td><strong>{{ lot.revenu_total | number:'1.2-2' }}</strong></td>
+          <td [class.text-success]="lot.est_benefice" [class.text-danger]="!lot.est_benefice">
+            <strong>{{ lot.resultat_net | number:'1.2-2' }}</strong>
+          </td>
+          <td>
+            <span class="badge badge-success" *ngIf="lot.est_benefice">Bénéfice</span>
+            <span class="badge badge-danger" *ngIf="!lot.est_benefice">Perte</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyTpl><p class="empty-state">Aucun lot disponible.</p></ng-template>
+  </div>
+
+  <!-- Détail de poids cumulé / formules -->
+  <div class="card formules" *ngIf="bilan() as b">
+    <h3>Rappel des formules appliquées</h3>
+    <ul>
+      <li><strong>Coût achat total</strong> = Nombre initial × Prix d'achat unitaire</li>
+      <li><strong>Coût nourriture</strong> = Σ(nourriture_g) × Prix nourriture/g de la race</li>
+      <li><strong>Coût total</strong> = Coût achat + Coût nourriture</li>
+      <li><strong>Revenu akoho</strong> = Nb vivants × Prix unitaire akoho (si poids_g = 0 sur dernière semaine)</li>
+      <li><strong>Revenu oeufs</strong> = Σ(oeufs bons × Prix unitaire oeuf) pour les oeufs à vendre</li>
+      <li><strong>Résultat net</strong> = (Revenu akoho + Revenu oeufs) - Coût total - (Nb morts × Prix unitaire akoho)</li>
+    </ul>
+  </div>
+</div>

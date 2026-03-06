@@ -1,0 +1,68 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Races</h1>
+    <button class="btn btn-primary" (click)="openCreateForm()">+ Nouvelle race</button>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Formulaire -->
+  <div class="modal-overlay" *ngIf="showForm()">
+    <div class="modal">
+      <h2>{{ editingRace() ? 'Modifier la race' : 'Nouvelle race' }}</h2>
+      <form (ngSubmit)="save()">
+        <div class="form-group">
+          <label>Nom de la race *</label>
+          <input type="text" [(ngModel)]="form.nom" name="nom" required class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Prix unitaire akoho (Ar) *</label>
+          <input type="number" [(ngModel)]="form.prix_unitaire_akoho" name="pu_akoho" required min="0" step="0.01" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Prix unitaire oeuf (Ar) *</label>
+          <input type="number" [(ngModel)]="form.prix_unitaire_oeuf" name="pu_oeuf" required min="0" step="0.01" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Prix nourriture / gramme (Ar) *</label>
+          <input type="number" [(ngModel)]="form.prix_nourriture_par_gramme" name="prix_nour" required min="0" step="0.0001" class="form-control" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card" *ngIf="!loading(); else loadingTpl">
+    <table class="table" *ngIf="races().length > 0; else emptyTpl">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Prix akoho (Ar)</th>
+          <th>Prix oeuf (Ar)</th>
+          <th>Prix nourrit./g (Ar)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of races()">
+          <td><strong>{{ r.nom }}</strong></td>
+          <td>{{ r.prix_unitaire_akoho | number:'1.2-2' }}</td>
+          <td>{{ r.prix_unitaire_oeuf | number:'1.2-2' }}</td>
+          <td>{{ r.prix_nourriture_par_gramme | number:'1.4-4' }}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" (click)="openEditForm(r)">Modifier</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(r.id)">Supprimer</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyTpl>
+      <p class="empty-state">Aucune race enregistrée. Commencez par créer une race.</p>
+    </ng-template>
+  </div>
+  <ng-template #loadingTpl><p class="loading">Chargement...</p></ng-template>
+</div>

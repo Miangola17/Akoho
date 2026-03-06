@@ -1,0 +1,128 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Statistiques hebdomadaires</h1>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Sélecteur de lot -->
+  <div class="card select-lot">
+    <label class="label-bold">Sélectionner un lot :</label>
+    <select class="form-control" (change)="selectLot(+$any($event.target).value)">
+      <option value="0">-- Choisir un lot --</option>
+      <option *ngFor="let l of lots()" [value]="l.id" [selected]="l.id === selectedLotId()">
+        {{ l.nom }} ({{ l.race_nom }})
+      </option>
+    </select>
+  </div>
+
+  <!-- Info lot sélectionné -->
+  <div class="lot-info card" *ngIf="selectedLot() as lot">
+    <h3>{{ lot.nom }}</h3>
+    <div class="lot-chips">
+      <span class="chip">Race: <strong>{{ lot.race_nom }}</strong></span>
+      <span class="chip">Total: <strong>{{ lot.nombre_initial }}</strong></span>
+      <span class="chip text-success">Vivants: <strong>{{ lot.nombre_vivants }}</strong></span>
+      <span class="chip text-danger">Morts: <strong>{{ lot.nombre_morts }}</strong></span>
+    </div>
+    <div class="lot-actions">
+      <button class="btn btn-primary" (click)="openStatForm()">+ Ajouter semaine</button>
+      <button class="btn btn-danger" (click)="openMortForm()">Enregistrer des morts</button>
+    </div>
+  </div>
+
+  <!-- Formulaire statistique -->
+  <div class="modal-overlay" *ngIf="showStatForm()">
+    <div class="modal">
+      <h2>{{ editingStat() ? 'Modifier' : 'Ajouter' }} statistique - Semaine {{ statForm.semaine }}</h2>
+      <form (ngSubmit)="saveStat()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Semaine *</label>
+            <input type="number" [(ngModel)]="statForm.semaine" name="semaine" required min="0" class="form-control" [readonly]="!editingStat()" />
+          </div>
+          <div class="form-group">
+            <label>Date *</label>
+            <input type="date" [(ngModel)]="statForm.date_stat" name="date_stat" required class="form-control" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Gain de poids (g) <small>(0 = prêt à vendre)</small></label>
+            <input type="number" [(ngModel)]="statForm.poids_g" name="poids_g" min="0" step="0.01" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nourriture consommée (g)</label>
+            <input type="number" [(ngModel)]="statForm.nourriture_g" name="nourriture_g" min="0" step="0.01" class="form-control" />
+            <small *ngIf="statForm.semaine === 0">Semaine 0 = poids initial, nourriture optionnelle</small>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Formulaire mort -->
+  <div class="modal-overlay" *ngIf="showMortForm()">
+    <div class="modal">
+      <h2>Enregistrer des morts</h2>
+      <form (ngSubmit)="saveMort()">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="mortForm.date_mort" name="date_mort" required class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Nombre de morts *</label>
+          <input type="number" [(ngModel)]="mortForm.nombre" name="nombre" required min="1" class="form-control" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">Annuler</button>
+          <button type="submit" class="btn btn-danger">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tableau statistiques -->
+  <div class="card" *ngIf="selectedLotId() && !loading()">
+    <table class="table" *ngIf="stats().length > 0; else emptyStatsTpl">
+      <thead>
+        <tr>
+          <th>Semaine</th>
+          <th>Date</th>
+          <th>Gain poids (g)</th>
+          <th>Nourriture (g)</th>
+          <th>Poids cumulé (g)</th>
+          <th>Nourriture cumulée (g)</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of stats()" [class.row-sell]="aKohoAVendre(s)">
+          <td><strong>S{{ s.semaine }}</strong></td>
+          <td>{{ s.date_stat | date:'dd/MM/yyyy' }}</td>
+          <td [class.text-danger]="s.semaine > 0 && s.poids_g === 0">{{ s.poids_g | number:'1.2-2' }}</td>
+          <td>{{ s.nourriture_g | number:'1.2-2' }}</td>
+          <td><strong>{{ s.poids_cumule_g | number:'1.2-2' }}</strong></td>
+          <td>{{ s.nourriture_cumule_g | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge badge-success" *ngIf="s.semaine === 0">Poids initial</span>
+            <span class="badge badge-warning" *ngIf="s.semaine > 0 && s.poids_g > 0">En croissance</span>
+            <span class="badge badge-danger" *ngIf="aKohoAVendre(s)">À vendre !</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-secondary" (click)="openStatForm(s)">Modifier</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteStat(s.id)">Suppr.</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #emptyStatsTpl>
+      <p class="empty-state">Aucune statistique. Commencez par ajouter la semaine 0 (poids initial).</p>
+    </ng-template>
+  </div>
+</div>

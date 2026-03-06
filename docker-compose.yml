@@ -1,0 +1,80 @@
+version: '3.8'
+
+# ============================================================
+# Akoho Manager - Docker Compose
+# Lance : SQL Server + Backend Node.js + Frontend Angular
+# Usage : docker compose up
+# ============================================================
+
+services:
+
+  # ── 1. SQL Server 2022 (Linux) ─────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: akoho-db
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Akoho@2025!"
+    ports:
+      - "1433:1433"
+    volumes:
+      - akoho-db-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Akoho@2025!" -Q "SELECT 1" -b -C
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # ── 2. Init base de données (s'exécute une fois) ───────────
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: akoho-db-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - ./docker/init.sql:/init.sql
+    entrypoint: >
+      /bin/bash -c "
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P 'Akoho@2025!' -i /init.sql -C &&
+        echo '✔ Base AkohoDB initialisée'
+      "
+    restart: "no"
+
+  # ── 3. Backend Node.js ─────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: akoho-backend
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_SERVER: sqlserver
+      DB_DATABASE: AkohoDB
+      DB_USER: sa
+      DB_PASSWORD: "Akoho@2025!"
+      DB_PORT: 1433
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # ── 4. Frontend Angular ────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: akoho-frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  akoho-db-data:
