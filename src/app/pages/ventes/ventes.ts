@@ -43,8 +43,8 @@ export class VentesPage implements OnInit {
   formOeuf: Partial<VenteOeuf> = { oeuf_id: 0, date_vente: '', nombre_vendus: 0, montant_total: 0 };
 
   ngOnInit() {
-    this.lotService.getAll().subscribe(l => this.lots.set(l));
-    this.oeufService.getAll().subscribe(o => this.oeufs.set(o.filter(oeuf => oeuf.type === 'vendre')));
+    this.lotService.getAll().subscribe((l: Lot[]) => this.lots.set(l));
+    this.oeufService.getAll().subscribe((o: Oeuf[]) => this.oeufs.set(o.filter((oeuf: Oeuf) => oeuf.type === 'vendre')));
     this.loadResume();
     this.loadEstimation();
   }
@@ -52,31 +52,31 @@ export class VentesPage implements OnInit {
   loadResume() {
     this.loading.set(true);
     this.venteService.getResume(this.dateFiltre).subscribe({
-      next: (data) => { this.resume.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data: any) => { this.resume.set(data); this.loading.set(false); },
+      error: (err: any) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
   loadVentesPoulet() {
     this.loading.set(true);
     this.venteService.getVentesPoulet(undefined, this.dateFiltre).subscribe({
-      next: (data) => { this.ventesPoulet.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data: any) => { this.ventesPoulet.set(data); this.loading.set(false); },
+      error: (err: any) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
   loadVentesOeuf() {
     this.loading.set(true);
     this.venteService.getVentesOeuf(this.dateFiltre).subscribe({
-      next: (data) => { this.ventesOeuf.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data: any) => { this.ventesOeuf.set(data); this.loading.set(false); },
+      error: (err: any) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
   loadEstimation() {
     this.venteService.getEstimation().subscribe({
-      next: (data) => this.estimation.set(data),
-      error: (err) => this.error.set(err.message)
+      next: (data: any) => this.estimation.set(data),
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
@@ -103,7 +103,7 @@ export class VentesPage implements OnInit {
   savePoulet() {
     this.venteService.createVentePoulet(this.formPoulet).subscribe({
       next: () => { this.showFormPoulet.set(false); this.loadVentesPoulet(); this.loadResume(); },
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
@@ -111,12 +111,12 @@ export class VentesPage implements OnInit {
     if (!confirm('Supprimer cette vente ?')) return;
     this.venteService.deleteVentePoulet(id).subscribe({
       next: () => { this.loadVentesPoulet(); this.loadResume(); },
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
   onLotChange() {
-    const lot = this.lots().find(l => l.id === this.formPoulet.lot_id);
+    const lot = this.lots().find((l: Lot) => l.id === this.formPoulet.lot_id);
     if (lot && this.formPoulet.nombre_vendus) {
       this.formPoulet.montant_total = this.formPoulet.nombre_vendus * (lot.prix_unitaire_akoho || 0);
     }
@@ -135,7 +135,7 @@ export class VentesPage implements OnInit {
   saveOeuf() {
     this.venteService.createVenteOeuf(this.formOeuf).subscribe({
       next: () => { this.showFormOeuf.set(false); this.loadVentesOeuf(); this.loadResume(); },
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
@@ -143,12 +143,12 @@ export class VentesPage implements OnInit {
     if (!confirm('Supprimer cette vente ?')) return;
     this.venteService.deleteVenteOeuf(id).subscribe({
       next: () => { this.loadVentesOeuf(); this.loadResume(); },
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
   onOeufChange() {
-    const oeuf = this.oeufs().find(o => o.id === this.formOeuf.oeuf_id);
+    const oeuf = this.oeufs().find((o: Oeuf) => o.id === this.formOeuf.oeuf_id);
     if (oeuf && this.formOeuf.nombre_vendus) {
       this.formOeuf.montant_total = this.formOeuf.nombre_vendus * (oeuf.prix_unitaire_oeuf || 0);
     }

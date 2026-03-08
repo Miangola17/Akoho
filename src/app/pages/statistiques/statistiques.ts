@@ -35,7 +35,7 @@ export class StatistiquesPage implements OnInit {
   mortForm = { lot_id: 0, date_mort: '', nombre: 0 };
 
   ngOnInit() {
-    this.lotService.getAll().subscribe(lots => {
+    this.lotService.getAll().subscribe((lots: Lot[]) => {
       this.lots.set(lots);
       const routeLotId = this.route.snapshot.paramMap.get('lot_id');
       if (routeLotId) {
@@ -46,7 +46,7 @@ export class StatistiquesPage implements OnInit {
 
   selectLot(id: number) {
     this.selectedLotId.set(id);
-    const lot = this.lots().find(l => l.id === id) || null;
+    const lot = this.lots().find((l: Lot) => l.id === id) || null;
     this.selectedLot.set(lot);
     this.loadStats(id);
   }
@@ -54,15 +54,15 @@ export class StatistiquesPage implements OnInit {
   loadStats(lotId: number) {
     this.loading.set(true);
     this.statService.getByLot(lotId).subscribe({
-      next: (data) => { this.stats.set(data); this.loading.set(false); },
-      error: (err) => { this.error.set(err.message); this.loading.set(false); }
+      next: (data: StatistiqueLot[]) => { this.stats.set(data); this.loading.set(false); },
+      error: (err: any) => { this.error.set(err.message); this.loading.set(false); }
     });
   }
 
   get nextSemaine(): number {
     const list = this.stats();
     if (!list.length) return 0;
-    return Math.max(...list.map(s => s.semaine)) + 1;
+    return Math.max(...list.map((s: StatistiqueLot) => s.semaine)) + 1;
   }
 
   openStatForm(stat?: StatistiqueLot) {
@@ -82,12 +82,12 @@ export class StatistiquesPage implements OnInit {
     if (editing) {
       this.statService.update(editing.id, this.statForm).subscribe({
         next: () => { this.showStatForm.set(false); this.loadStats(this.selectedLotId()!); },
-        error: (err) => this.error.set(err.message)
+        error: (err: any) => this.error.set(err.message)
       });
     } else {
       this.statService.create(this.statForm).subscribe({
         next: () => { this.showStatForm.set(false); this.loadStats(this.selectedLotId()!); },
-        error: (err) => this.error.set(err.message)
+        error: (err: any) => this.error.set(err.message)
       });
     }
   }
@@ -96,7 +96,7 @@ export class StatistiquesPage implements OnInit {
     if (!confirm('Supprimer cette statistique ?')) return;
     this.statService.delete(id).subscribe({
       next: () => this.loadStats(this.selectedLotId()!),
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
@@ -109,15 +109,15 @@ export class StatistiquesPage implements OnInit {
     this.mortService.create(this.mortForm).subscribe({
       next: () => {
         this.showMortForm.set(false);
-        this.lotService.getById(this.selectedLotId()!).subscribe(lot => {
+        this.lotService.getById(this.selectedLotId()!).subscribe((lot: Lot) => {
           this.selectedLot.set(lot);
-          const idx = this.lots().findIndex(l => l.id === lot.id);
+          const idx = this.lots().findIndex((l: Lot) => l.id === lot.id);
           const updated = [...this.lots()];
           updated[idx] = lot;
           this.lots.set(updated);
         });
       },
-      error: (err) => this.error.set(err.message)
+      error: (err: any) => this.error.set(err.message)
     });
   }
 
