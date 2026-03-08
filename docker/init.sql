@@ -22,6 +22,7 @@ BEGIN
         prix_unitaire_akoho        DECIMAL(18,2) NOT NULL,
         prix_unitaire_oeuf         DECIMAL(18,2) NOT NULL,
         prix_nourriture_par_gramme DECIMAL(18,4) NOT NULL,
+        prix_poussins              DECIMAL(18,2) NOT NULL DEFAULT 0,
         created_at                 DATETIME2 DEFAULT GETDATE()
     );
 END
@@ -35,6 +36,7 @@ BEGIN
         nom                 NVARCHAR(100) NOT NULL,
         race_id             INT NOT NULL REFERENCES races(id) ON DELETE CASCADE,
         date_creation       DATE NOT NULL,
+        date_sortie         DATE NULL,
         nombre_initial      INT NOT NULL,
         nombre_morts        INT NOT NULL DEFAULT 0,
         prix_achat_unitaire DECIMAL(18,2) NOT NULL,
@@ -85,7 +87,33 @@ BEGIN
     );
 END
 GO
+-- ── TABLE : ventes_poulet ────────────────────────
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ventes_poulet')
+BEGIN
+    CREATE TABLE ventes_poulet (
+        id              INT IDENTITY(1,1) PRIMARY KEY,
+        lot_id          INT NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
+        date_vente      DATE NOT NULL,
+        nombre_vendus   INT NOT NULL,
+        montant_total   DECIMAL(18,2) NOT NULL,
+        created_at      DATETIME2 DEFAULT GETDATE()
+    );
+END
+GO
 
+-- ── TABLE : ventes_oeuf ──────────────────────────
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ventes_oeuf')
+BEGIN
+    CREATE TABLE ventes_oeuf (
+        id              INT IDENTITY(1,1) PRIMARY KEY,
+        oeuf_id         INT NOT NULL REFERENCES oeufs(id) ON DELETE CASCADE,
+        date_vente      DATE NOT NULL,
+        nombre_vendus   INT NOT NULL,
+        montant_total   DECIMAL(18,2) NOT NULL,
+        created_at      DATETIME2 DEFAULT GETDATE()
+    );
+END
+GO
 -- ── VUES ──────────────────────────────────────────────────
 IF NOT EXISTS (SELECT * FROM sys.views WHERE name = 'vue_poids_cumule')
 BEGIN

@@ -5,6 +5,7 @@ import { LotsPage } from './pages/lots/lots';
 import { StatistiquesPage } from './pages/statistiques/statistiques';
 import { OeufsPage } from './pages/oeufs/oeufs';
 import { BilanPage } from './pages/bilan/bilan';
+import { VentesPage } from './pages/ventes/ventes';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -15,4 +16,5 @@ export const routes: Routes = [
   { path: 'statistiques/:lot_id', component: StatistiquesPage },
   { path: 'oeufs', component: OeufsPage },
   { path: 'bilan', component: BilanPage },
+  { path: 'ventes', component: VentesPage },
 ];

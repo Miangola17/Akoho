@@ -18,6 +18,7 @@ CREATE TABLE races (
     prix_unitaire_akoho       DECIMAL(18,2) NOT NULL,  -- prix de vente d'un poulet
     prix_unitaire_oeuf        DECIMAL(18,2) NOT NULL,  -- prix de vente d'un oeuf
     prix_nourriture_par_gramme DECIMAL(18,4) NOT NULL, -- coût nourriture par gramme
+    prix_poussins             DECIMAL(18,2) NOT NULL DEFAULT 0,  -- prix d'un poussin
     created_at   DATETIME2 DEFAULT GETDATE()
 );
 
@@ -30,6 +31,7 @@ CREATE TABLE lots (
     nom                  NVARCHAR(100) NOT NULL,
     race_id              INT NOT NULL REFERENCES races(id) ON DELETE CASCADE,
     date_creation        DATE NOT NULL,
+    date_sortie          DATE NULL,                       -- date de fin/sortie du lot
     nombre_initial       INT NOT NULL,                    -- nombre initial de poulets achetés
     nombre_morts         INT NOT NULL DEFAULT 0,          -- total morts à date
     prix_achat_unitaire  DECIMAL(18,2) NOT NULL,          -- prix d'achat unitaire
@@ -75,6 +77,32 @@ CREATE TABLE morts_lot (
     lot_id    INT NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
     date_mort DATE NOT NULL,
     nombre    INT NOT NULL DEFAULT 0
+);
+
+-- ============================================================
+-- TABLE : ventes_poulet
+-- Enregistrement des ventes de poulets
+-- ============================================================
+CREATE TABLE ventes_poulet (
+    id              INT IDENTITY(1,1) PRIMARY KEY,
+    lot_id          INT NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
+    date_vente      DATE NOT NULL,
+    nombre_vendus   INT NOT NULL,
+    montant_total   DECIMAL(18,2) NOT NULL,
+    created_at      DATETIME2 DEFAULT GETDATE()
+);
+
+-- ============================================================
+-- TABLE : ventes_oeuf
+-- Enregistrement des ventes d'oeufs
+-- ============================================================
+CREATE TABLE ventes_oeuf (
+    id              INT IDENTITY(1,1) PRIMARY KEY,
+    oeuf_id         INT NOT NULL REFERENCES oeufs(id) ON DELETE CASCADE,
+    date_vente      DATE NOT NULL,
+    nombre_vendus   INT NOT NULL,
+    montant_total   DECIMAL(18,2) NOT NULL,
+    created_at      DATETIME2 DEFAULT GETDATE()
 );
 
 -- ============================================================

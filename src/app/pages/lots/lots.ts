@@ -26,8 +26,8 @@ export class LotsPage implements OnInit {
   editingLot = signal<Lot | null>(null);
 
   form: Partial<Lot> = {
-    nom: '', race_id: 0, date_creation: '', nombre_initial: 0,
-    prix_achat_unitaire: 0, nombre_morts: 0, description: ''
+    nom: '', race_id: 0, date_creation: '', date_sortie: '',
+    nombre_initial: 0, prix_achat_unitaire: 0, nombre_morts: 0, description: ''
   };
 
   ngOnInit() {
@@ -45,13 +45,17 @@ export class LotsPage implements OnInit {
 
   openCreateForm() {
     this.editingLot.set(null);
-    this.form = { nom: '', race_id: 0, date_creation: new Date().toISOString().slice(0, 10), nombre_initial: 0, prix_achat_unitaire: 0, nombre_morts: 0, description: '' };
+    this.form = { nom: '', race_id: 0, date_creation: new Date().toISOString().slice(0, 10), date_sortie: '', nombre_initial: 0, prix_achat_unitaire: 0, nombre_morts: 0, description: '' };
     this.showForm.set(true);
   }
 
   openEditForm(lot: Lot) {
     this.editingLot.set(lot);
-    this.form = { ...lot };
+    this.form = { 
+      ...lot,
+      date_creation: lot.date_creation?.slice(0, 10),
+      date_sortie: lot.date_sortie?.slice(0, 10) || ''
+    };
     this.showForm.set(true);
   }
 

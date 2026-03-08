@@ -44,6 +44,12 @@
             <input type="number" [(ngModel)]="form.nombre_morts" name="nombre_morts" min="0" class="form-control" />
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date de sortie</label>
+            <input type="date" [(ngModel)]="form.date_sortie" name="date_sortie" class="form-control" />
+          </div>
+        </div>
         <div class="form-group">
           <label>Description</label>
           <textarea [(ngModel)]="form.description" name="description" rows="2" class="form-control"></textarea>
@@ -64,6 +70,7 @@
           <th>Nom</th>
           <th>Race</th>
           <th>Date création</th>
+          <th>Date sortie</th>
           <th>Total</th>
           <th>Vivants</th>
           <th>Morts</th>
@@ -76,6 +83,7 @@
           <td><strong>{{ l.nom }}</strong></td>
           <td><span class="badge">{{ l.race_nom }}</span></td>
           <td>{{ l.date_creation | date:'dd/MM/yyyy' }}</td>
+          <td>{{ l.date_sortie ? (l.date_sortie | date:'dd/MM/yyyy') : '-' }}</td>
           <td>{{ l.nombre_initial }}</td>
           <td class="text-success">{{ l.nombre_vivants }}</td>
           <td class="text-danger">{{ l.nombre_morts }}</td>

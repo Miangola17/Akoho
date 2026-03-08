@@ -26,7 +26,7 @@ router.get('/:id', async (req, res, next) => {
 // POST create race
 router.post('/', async (req, res, next) => {
   try {
-    const { nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme } = req.body;
+    const { nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme, prix_poussins } = req.body;
     if (!nom || prix_unitaire_akoho == null || prix_unitaire_oeuf == null || prix_nourriture_par_gramme == null) {
       return res.status(400).json({ error: 'Tous les champs sont obligatoires' });
     }
@@ -36,10 +36,11 @@ router.post('/', async (req, res, next) => {
       .input('prix_unitaire_akoho', sql.Decimal(18, 2), prix_unitaire_akoho)
       .input('prix_unitaire_oeuf', sql.Decimal(18, 2), prix_unitaire_oeuf)
       .input('prix_nourriture_par_gramme', sql.Decimal(18, 4), prix_nourriture_par_gramme)
+      .input('prix_poussins', sql.Decimal(18, 2), prix_poussins || 0)
       .query(`
-        INSERT INTO races (nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme)
+        INSERT INTO races (nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme, prix_poussins)
         OUTPUT INSERTED.*
-        VALUES (@nom, @prix_unitaire_akoho, @prix_unitaire_oeuf, @prix_nourriture_par_gramme)
+        VALUES (@nom, @prix_unitaire_akoho, @prix_unitaire_oeuf, @prix_nourriture_par_gramme, @prix_poussins)
       `);
     res.status(201).json(result.recordset[0]);
   } catch (err) { next(err); }
@@ -48,7 +49,7 @@ router.post('/', async (req, res, next) => {
 // PUT update race
 router.put('/:id', async (req, res, next) => {
   try {
-    const { nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme } = req.body;
+    const { nom, prix_unitaire_akoho, prix_unitaire_oeuf, prix_nourriture_par_gramme, prix_poussins } = req.body;
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, req.params.id)
@@ -56,12 +57,14 @@ router.put('/:id', async (req, res, next) => {
       .input('prix_unitaire_akoho', sql.Decimal(18, 2), prix_unitaire_akoho)
       .input('prix_unitaire_oeuf', sql.Decimal(18, 2), prix_unitaire_oeuf)
       .input('prix_nourriture_par_gramme', sql.Decimal(18, 4), prix_nourriture_par_gramme)
+      .input('prix_poussins', sql.Decimal(18, 2), prix_poussins || 0)
       .query(`
         UPDATE races
         SET nom = @nom,
             prix_unitaire_akoho = @prix_unitaire_akoho,
             prix_unitaire_oeuf = @prix_unitaire_oeuf,
-            prix_nourriture_par_gramme = @prix_nourriture_par_gramme
+            prix_nourriture_par_gramme = @prix_nourriture_par_gramme,
+            prix_poussins = @prix_poussins
         OUTPUT INSERTED.*
         WHERE id = @id
       `);

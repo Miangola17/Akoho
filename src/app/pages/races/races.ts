@@ -24,7 +24,8 @@ export class RacesPage implements OnInit {
     nom: '',
     prix_unitaire_akoho: 0,
     prix_unitaire_oeuf: 0,
-    prix_nourriture_par_gramme: 0
+    prix_nourriture_par_gramme: 0,
+    prix_poussins: 0
   };
 
   ngOnInit() { this.loadRaces(); }
@@ -39,7 +40,7 @@ export class RacesPage implements OnInit {
 
   openCreateForm() {
     this.editingRace.set(null);
-    this.form = { nom: '', prix_unitaire_akoho: 0, prix_unitaire_oeuf: 0, prix_nourriture_par_gramme: 0 };
+    this.form = { nom: '', prix_unitaire_akoho: 0, prix_unitaire_oeuf: 0, prix_nourriture_par_gramme: 0, prix_poussins: 0 };
     this.showForm.set(true);
   }
 
@@ -49,7 +50,8 @@ export class RacesPage implements OnInit {
       nom: race.nom,
       prix_unitaire_akoho: race.prix_unitaire_akoho,
       prix_unitaire_oeuf: race.prix_unitaire_oeuf,
-      prix_nourriture_par_gramme: race.prix_nourriture_par_gramme
+      prix_nourriture_par_gramme: race.prix_nourriture_par_gramme,
+      prix_poussins: race.prix_poussins || 0
     };
     this.showForm.set(true);
   }

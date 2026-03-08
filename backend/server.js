@@ -8,6 +8,7 @@ const statistiquesRouter = require('./routes/statistiques');
 const oeufsRouter = require('./routes/oeufs');
 const bilanRouter = require('./routes/bilan');
 const mortsRouter = require('./routes/morts');
+const ventesRouter = require('./routes/ventes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use('/api/statistiques', statistiquesRouter);
 app.use('/api/oeufs', oeufsRouter);
 app.use('/api/bilan', bilanRouter);
 app.use('/api/morts', mortsRouter);
+app.use('/api/ventes', ventesRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

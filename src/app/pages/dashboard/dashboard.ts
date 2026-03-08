@@ -48,6 +48,9 @@ import { BilanService } from '../../services/bilan.service';
         <a routerLink="/oeufs" class="dash-link">
           <span>🥚</span><span>Gestion des oeufs</span>
         </a>
+        <a routerLink="/ventes" class="dash-link">
+          <span>💵</span><span>Ventes</span>
+        </a>
         <a routerLink="/bilan" class="dash-link">
           <span>💼</span><span>Bilan financier</span>
         </a>

@@ -8,7 +8,7 @@ router.get('/', async (req, res, next) => {
     const pool = await getPool();
     const result = await pool.request().query(`
       SELECT l.*, r.nom AS race_nom,
-             r.prix_unitaire_akoho, r.prix_unitaire_oeuf, r.prix_nourriture_par_gramme,
+             r.prix_unitaire_akoho, r.prix_unitaire_oeuf, r.prix_nourriture_par_gramme, r.prix_poussins,
              (l.nombre_initial - l.nombre_morts) AS nombre_vivants,
              (l.nombre_initial * l.prix_achat_unitaire) AS cout_achat_total
       FROM lots l
@@ -27,7 +27,7 @@ router.get('/:id', async (req, res, next) => {
       .input('id', sql.Int, req.params.id)
       .query(`
         SELECT l.*, r.nom AS race_nom,
-               r.prix_unitaire_akoho, r.prix_unitaire_oeuf, r.prix_nourriture_par_gramme,
+               r.prix_unitaire_akoho, r.prix_unitaire_oeuf, r.prix_nourriture_par_gramme, r.prix_poussins,
                (l.nombre_initial - l.nombre_morts) AS nombre_vivants,
                (l.nombre_initial * l.prix_achat_unitaire) AS cout_achat_total
         FROM lots l
@@ -66,13 +66,14 @@ router.post('/', async (req, res, next) => {
 // PUT update lot
 router.put('/:id', async (req, res, next) => {
   try {
-    const { nom, race_id, date_creation, nombre_initial, nombre_morts, prix_achat_unitaire, description } = req.body;
+    const { nom, race_id, date_creation, date_sortie, nombre_initial, nombre_morts, prix_achat_unitaire, description } = req.body;
     const pool = await getPool();
     const result = await pool.request()
       .input('id', sql.Int, req.params.id)
       .input('nom', sql.NVarChar(100), nom)
       .input('race_id', sql.Int, race_id)
       .input('date_creation', sql.Date, date_creation)
+      .input('date_sortie', sql.Date, date_sortie || null)
       .input('nombre_initial', sql.Int, nombre_initial)
       .input('nombre_morts', sql.Int, nombre_morts || 0)
       .input('prix_achat_unitaire', sql.Decimal(18, 2), prix_achat_unitaire)
@@ -80,6 +81,7 @@ router.put('/:id', async (req, res, next) => {
       .query(`
         UPDATE lots
         SET nom = @nom, race_id = @race_id, date_creation = @date_creation,
+            date_sortie = @date_sortie,
             nombre_initial = @nombre_initial, nombre_morts = @nombre_morts,
             prix_achat_unitaire = @prix_achat_unitaire, description = @description
         OUTPUT INSERTED.*

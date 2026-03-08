@@ -1,0 +1,253 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Ventes</h1>
+    <p class="subtitle">Gérez vos ventes de poulets et d'oeufs</p>
+  </div>
+
+  <div class="alert alert-error" *ngIf="error()">{{ error() }}</div>
+
+  <!-- Date Filter -->
+  <div class="card filter-section">
+    <div class="filter-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="dateFiltre" (change)="onDateChange()" class="form-control" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button [class.active]="activeTab === 'resume'" (click)="onTabChange('resume')">Résumé du jour</button>
+    <button [class.active]="activeTab === 'poulet'" (click)="onTabChange('poulet')">Ventes poulets</button>
+    <button [class.active]="activeTab === 'oeuf'" (click)="onTabChange('oeuf')">Ventes oeufs</button>
+    <button [class.active]="activeTab === 'estimation'" (click)="onTabChange('estimation')">Estimation</button>
+  </div>
+
+  <!-- TAB: Résumé -->
+  <div class="tab-content" *ngIf="activeTab === 'resume'">
+    <div class="loading" *ngIf="loading()">Chargement...</div>
+    <div class="resume-grid" *ngIf="resume() as r">
+      <div class="resume-card poulet">
+        <div class="resume-icon">🐔</div>
+        <div class="resume-label">Poulets vendus</div>
+        <div class="resume-value">{{ r.poulets.nombre_vendus }}</div>
+        <div class="resume-montant">{{ r.poulets.montant_total | number:'1.0-0' }} Ar</div>
+      </div>
+      <div class="resume-card oeuf">
+        <div class="resume-icon">🥚</div>
+        <div class="resume-label">Oeufs vendus</div>
+        <div class="resume-value">{{ r.oeufs.nombre_vendus }}</div>
+        <div class="resume-montant">{{ r.oeufs.montant_total | number:'1.0-0' }} Ar</div>
+      </div>
+      <div class="resume-card total">
+        <div class="resume-icon">💰</div>
+        <div class="resume-label">Total du jour</div>
+        <div class="resume-value resume-total">{{ r.montant_total_jour | number:'1.0-0' }} Ar</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ventes poulets -->
+  <div class="tab-content" *ngIf="activeTab === 'poulet'">
+    <div class="card">
+      <div class="card-header">
+        <h3>Ventes de poulets</h3>
+        <button class="btn btn-primary" (click)="openFormPoulet()">+ Nouvelle vente</button>
+      </div>
+
+      <!-- Form -->
+      <div class="form-modal" *ngIf="showFormPoulet()">
+        <div class="form-card">
+          <h4>Enregistrer une vente de poulet</h4>
+          <div class="form-group">
+            <label>Lot</label>
+            <select [(ngModel)]="formPoulet.lot_id" (change)="onLotChange()" class="form-control">
+              <option [value]="0" disabled>Sélectionner un lot</option>
+              <option *ngFor="let l of lots()" [value]="l.id">{{ l.nom }} ({{ l.nombre_vivants }} vivants)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date de vente</label>
+            <input type="date" [(ngModel)]="formPoulet.date_vente" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nombre vendus</label>
+            <input type="number" [(ngModel)]="formPoulet.nombre_vendus" (input)="onNombreVendusPouletChange()" class="form-control" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Montant total (Ar)</label>
+            <input type="number" [(ngModel)]="formPoulet.montant_total" class="form-control" min="0" />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="savePoulet()">Enregistrer</button>
+            <button class="btn btn-secondary" (click)="cancelPoulet()">Annuler</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="loading" *ngIf="loading()">Chargement...</div>
+      <table class="table" *ngIf="ventesPoulet().length > 0; else emptyPoulet">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Lot</th>
+            <th>Race</th>
+            <th>Nombre vendus</th>
+            <th>Montant (Ar)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of ventesPoulet()">
+            <td>{{ v.date_vente | date:'dd/MM/yyyy' }}</td>
+            <td>{{ v.lot_nom }}</td>
+            <td>{{ v.race_nom }}</td>
+            <td>{{ v.nombre_vendus }}</td>
+            <td>{{ v.montant_total | number:'1.0-0' }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="deletePoulet(v.id)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyPoulet><p class="empty-state">Aucune vente de poulet pour cette date.</p></ng-template>
+    </div>
+  </div>
+
+  <!-- TAB: Ventes oeufs -->
+  <div class="tab-content" *ngIf="activeTab === 'oeuf'">
+    <div class="card">
+      <div class="card-header">
+        <h3>Ventes d'oeufs</h3>
+        <button class="btn btn-primary" (click)="openFormOeuf()">+ Nouvelle vente</button>
+      </div>
+
+      <!-- Form -->
+      <div class="form-modal" *ngIf="showFormOeuf()">
+        <div class="form-card">
+          <h4>Enregistrer une vente d'oeuf</h4>
+          <div class="form-group">
+            <label>Oeuf (pondage)</label>
+            <select [(ngModel)]="formOeuf.oeuf_id" (change)="onOeufChange()" class="form-control">
+              <option [value]="0" disabled>Sélectionner un pondage</option>
+              <option *ngFor="let o of oeufs()" [value]="o.id">{{ o.lot_nom }} - {{ o.date_pondement | date:'dd/MM' }} ({{ o.nombre_oeufs_bons }} oeufs)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date de vente</label>
+            <input type="date" [(ngModel)]="formOeuf.date_vente" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Nombre vendus</label>
+            <input type="number" [(ngModel)]="formOeuf.nombre_vendus" (input)="onNombreVendusOeufChange()" class="form-control" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Montant total (Ar)</label>
+            <input type="number" [(ngModel)]="formOeuf.montant_total" class="form-control" min="0" />
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="saveOeuf()">Enregistrer</button>
+            <button class="btn btn-secondary" (click)="cancelOeuf()">Annuler</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="loading" *ngIf="loading()">Chargement...</div>
+      <table class="table" *ngIf="ventesOeuf().length > 0; else emptyOeuf">
+        <thead>
+          <tr>
+            <th>Date vente</th>
+            <th>Lot</th>
+            <th>Date pondage</th>
+            <th>Nombre vendus</th>
+            <th>Montant (Ar)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of ventesOeuf()">
+            <td>{{ v.date_vente | date:'dd/MM/yyyy' }}</td>
+            <td>{{ v.lot_nom }}</td>
+            <td>{{ v.date_pondement | date:'dd/MM/yyyy' }}</td>
+            <td>{{ v.nombre_vendus }}</td>
+            <td>{{ v.montant_total | number:'1.0-0' }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="deleteOeuf(v.id)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #emptyOeuf><p class="empty-state">Aucune vente d'oeuf pour cette date.</p></ng-template>
+    </div>
+  </div>
+
+  <!-- TAB: Estimation -->
+  <div class="tab-content" *ngIf="activeTab === 'estimation'">
+    <div class="card estimation-section" *ngIf="estimation() as e">
+      <h3>Estimation si on vendait tout aujourd'hui</h3>
+      <p class="estimation-date">Date: {{ e.date_estimation }}</p>
+
+      <div class="estimation-total">
+        <span>Total estimation globale:</span>
+        <strong>{{ e.total_estimation_global | number:'1.0-0' }} Ar</strong>
+      </div>
+
+      <div class="estimation-grid">
+        <div class="estimation-block">
+          <h4>🐔 Poulets ({{ e.poulets.total_estimation | number:'1.0-0' }} Ar)</h4>
+          <table class="table table-sm" *ngIf="e.poulets.lots.length > 0">
+            <thead>
+              <tr>
+                <th>Lot</th>
+                <th>Race</th>
+                <th>Vivants</th>
+                <th>Prix unit.</th>
+                <th>Poids moyen</th>
+                <th>Estimation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let lot of e.poulets.lots">
+                <td>{{ lot.lot_nom }}</td>
+                <td>{{ lot.race_nom }}</td>
+                <td>{{ lot.nombre_vivants }}</td>
+                <td>{{ lot.prix_unitaire_akoho | number:'1.0-0' }} Ar</td>
+                <td>{{ lot.poids_moyen_g | number:'1.0-0' }} g</td>
+                <td><strong>{{ lot.estimation_vente | number:'1.0-0' }} Ar</strong></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-state" *ngIf="e.poulets.lots.length === 0">Aucun lot actif.</p>
+        </div>
+
+        <div class="estimation-block">
+          <h4>🥚 Oeufs ({{ e.oeufs.total_estimation | number:'1.0-0' }} Ar)</h4>
+          <table class="table table-sm" *ngIf="e.oeufs.entries.length > 0">
+            <thead>
+              <tr>
+                <th>Lot</th>
+                <th>Date pondage</th>
+                <th>Oeufs bons</th>
+                <th>Prix unit.</th>
+                <th>Estimation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let oeuf of e.oeufs.entries">
+                <td>{{ oeuf.lot_nom }}</td>
+                <td>{{ oeuf.date_pondement | date:'dd/MM/yyyy' }}</td>
+                <td>{{ oeuf.nombre_oeufs_bons }}</td>
+                <td>{{ oeuf.prix_unitaire_oeuf | number:'1.0-0' }} Ar</td>
+                <td><strong>{{ oeuf.estimation_vente | number:'1.0-0' }} Ar</strong></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="empty-state" *ngIf="e.oeufs.entries.length === 0">Aucun oeuf à vendre.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
