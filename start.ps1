@@ -65,21 +65,23 @@ Write-Host ""
 Write-Host "[3/4] Verification des dependances..." -ForegroundColor Yellow
 
 if (-not (Test-Path (Join-Path $BACKEND "node_modules"))) {
-    Write-Host "      Backend  : installation npm (premiere fois)..." -ForegroundColor Yellow
+    Write-Host "      Backend  : installation npm (premiere fois, patientez)..." -ForegroundColor Yellow
     Push-Location $BACKEND
-    npm install
+    npm ci --prefer-offline --no-audit --no-fund 2>$null
+    if ($LASTEXITCODE -ne 0) { npm install --prefer-offline --no-audit --no-fund }
     Pop-Location
 } else {
-    Write-Host "      Backend  : OK (deja installe)" -ForegroundColor Green
+    Write-Host "      Backend  : OK" -ForegroundColor Green
 }
 
 if (-not (Test-Path (Join-Path $ROOT "node_modules"))) {
-    Write-Host "      Frontend : installation npm (premiere fois)..." -ForegroundColor Yellow
+    Write-Host "      Frontend : installation npm (premiere fois, ~2min)..." -ForegroundColor Yellow
     Push-Location $ROOT
-    npm install
+    npm ci --prefer-offline --no-audit --no-fund 2>$null
+    if ($LASTEXITCODE -ne 0) { npm install --prefer-offline --no-audit --no-fund }
     Pop-Location
 } else {
-    Write-Host "      Frontend : OK (deja installe)" -ForegroundColor Green
+    Write-Host "      Frontend : OK" -ForegroundColor Green
 }
 
 # ── 4. Creer les scripts temporaires puis lancer ────────────
